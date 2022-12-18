@@ -106,7 +106,7 @@ def init_tf(config_dict: dict = None) -> None:
     if tf_random_seed == "auto":
         tf_random_seed = np.random.randint(1 << 31)
     if tf_random_seed is not None:
-        tf.set_random_seed(tf_random_seed)
+        tf.compat.v1.set_random_seed(tf_random_seed)
 
     # Setup environment variables.
     for key, value in list(cfg.items()):
@@ -193,11 +193,11 @@ def set_vars(var_to_value_dict: dict) -> None:
         assert is_tf_expression(var)
 
         try:
-            setter = tf.get_default_graph().get_tensor_by_name(var.name.replace(":0", "/setter:0"))  # look for existing op
+            setter = tf.compat.v1.get_default_graph().get_tensor_by_name(var.name.replace(":0", "/setter:0"))  # look for existing op
         except KeyError:
             with absolute_name_scope(var.name.split(":")[0]):
-                with tf.control_dependencies(None):  # ignore surrounding control_dependencies
-                    setter = tf.assign(var, tf.placeholder(var.dtype, var.shape, "new_value"), name="setter")  # create new setter
+                with tf.compat.v1.control_dependencies(None):  # ignore surrounding control_dependencies
+                    setter = tf.compat.v1.assign(var, tf.placeholder(var.dtype, var.shape, "new_value"), name="setter")  # create new setter
 
         ops.append(setter)
         feed_dict[setter.op.inputs[1]] = value
@@ -209,8 +209,8 @@ def create_var_with_large_initial_value(initial_value: np.ndarray, *args, **kwar
     """Create tf.Variable with large initial value without bloating the tf graph."""
     assert_tf_initialized()
     assert isinstance(initial_value, np.ndarray)
-    zeros = tf.zeros(initial_value.shape, initial_value.dtype)
-    var = tf.Variable(zeros, *args, **kwargs)
+    zeros = tf.compat.v1.zeros(initial_value.shape, initial_value.dtype)
+    var = tf.compat.v1.Variable(zeros, *args, **kwargs)
     set_vars({var: initial_value})
     return var
 
@@ -219,9 +219,9 @@ def convert_images_from_uint8(images, drange=[-1,1], nhwc_to_nchw=False):
     """Convert a minibatch of images from uint8 to float32 with configurable dynamic range.
     Can be used as an input transformation for Network.run().
     """
-    images = tf.cast(images, tf.float32)
+    images = tf.compat.v1.cast(images, tf.float32)
     if nhwc_to_nchw:
-        images = tf.transpose(images, [0, 3, 1, 2])
+        images = tf.compat.v1.transpose(images, [0, 3, 1, 2])
     return (images - drange[0]) * ((drange[1] - drange[0]) / 255)
 
 
