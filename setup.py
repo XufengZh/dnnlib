@@ -7,7 +7,7 @@ setup(
 
     description='dnnlib - from StyleGAN repository',
 
-    url='https://github.com/podgorskiy/dnnlib',
+    url='https://github.com/XufengZh/dnnlib',
 
     author='NVIDIA',
 
